@@ -2,6 +2,8 @@
 
 % Experimental data
 gexp=10; % `true’ value of the parameter g
+
+% ode45 uses runge kutta order 4
 [t,thetaexp]=ode45(@forward,[0:.01:10],[pi/3 0],[],gexp); % creation of synthetic data
 figure;plot(t,thetaexp(:,1),'r')
 
