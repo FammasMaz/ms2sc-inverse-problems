@@ -1,23 +1,9 @@
 clear all; close all; clc;
-
-
-addpath("misfit/");
-load('id1.mat');
-
-plot(epsiexp, sigexp);
-xlim([0, 0.1])
-
-
-function forward=forward(t,theta,g)
-% l=1 : a unit length is assumed here
-forward=[theta(2);-g*sin(theta(1))]; % in the form y'=f(y,t)
-
-
 % Define parameters
-E = 100e9; % Pa
-K = 1e6; % Pa
-n = 0.2;
-sigma_dot = 0.8e6; % Pa*s^-1
+beam.E = 200e9; % Pa
+beam.K = 70e6; % Pa
+beam.n = 2;
+dsigma = 0.8e6; % Pa*s^-1
 r = 0.0254; % m
 s = pi * r^2; % m^2
 
@@ -26,13 +12,11 @@ tspan = [0, 10]; % s
 step = 0.01; % s
 
 % Define ODE function
-ode_fun = @(t, F) sigma_dot / E + (F / (s * K))^n;
+% [t, eps] = ode45(@(t, eps) ((dsigma * t / beam.K)^beam.n)+(0.8/beam.E),[0:.01:10], 0);
+[t, epsilon]=ode45(@forward_sigma, [0:.01:10], 0, [], beam, dsigma); % creation of synthetic data
 
-% Solve ODE
-[t, F] = ode45(ode_fun, tspan, 0);
-
-% Plot the result
-plot(t, F)
-xlabel('time (s)')
-ylabel('F(t) (N)')
-
+figure
+plot(epsilon, sigma);
+xlabel('Strain');
+ylabel('Stress');
+title('Stress-Strain Curve: Forward Problem');
