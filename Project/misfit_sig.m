@@ -1,6 +1,8 @@
-function misfit_sig=misfit_sig(n, eps_exp, tn, beam, dsigma)
+function misfit_sig=misfit_sig(x, eps_exp, tn, beam, dsigma)
 % Calculation of the misfit function with no gradient estimation
 beamtemp = beam;
-beamtemp.n = n; % update of the parameter
-[t, epsilon]=ode45(@forward_sigma, tn, 0,[], beamtemp, dsigma); % simulation of the response using the parameter g
-misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,n,tn); % calculation of the integral over time of the discrepancy model-exp
+beamtemp.n = x(3); % update of the parameter
+beamtemp.E = x(1);
+beamtemp.K = x(2);
+[t, epsilon]=ode45(@forward_sigma, tn, 0,[], beamtemp, dsigma);
+misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);

@@ -22,10 +22,10 @@ t_range = 0:0.01:10;
 sigma_data = fwd_sigma(t_range,dsigma);
 epsilon_data = fwd_epsilon(t_range,dsigma,E_data,K_data,n_data);
 
-% figure(1);
-% plot(epsilon_data,sigma_data);
-% xlabel("strain");
-% ylabel("stress");
+figure(1);
+plot(epsilon_data,sigma_data);
+xlabel("strain");
+ylabel("stress");
 
 % Parameter sweep to plot the misfit function
 val_misfit = misfit(dsigma,t_range,epsilon_data,E_range,K_range,n_ref);

@@ -24,10 +24,20 @@ ylabel('Stress');
 title('Stress-Strain Curve: Forward Problem');
 
 n_range = 0.5:0.1:2.5;
-
-for i=1:length(n_range)    
-    value(i)=misfit_sig(n_range(i), epsilon_exp, t, beam, dsigma);
+for i=1:length(n_range)   
+    x = [beam.E; beam.K; n_range(i)]; 
+    value(i)=misfit_sig(x, epsilon_exp, t, beam, dsigma);
 end
+
+%% Misfit Function Under Testing
+% x0 = [270e9; 72e6; 0.13];
+% obj_func = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma);
+% options = optimset('Display','iter','TolFun',1e-6,'GradObj','off');
+% [x_opt, misfit_min] = fminunc(obj_func, x0, options);
+%%%
+
+
+
 
 figure
 plot(n_range, value);
@@ -70,3 +80,6 @@ xlabel('K');
 ylabel('E');
 zlabel('Misfit');
 title('Misfit Values for Different Values of K and E');
+
+
+[misfit, E_opt, K_opt, n_opt] = misfit_minunc(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
