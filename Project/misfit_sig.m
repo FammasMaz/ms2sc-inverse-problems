@@ -7,11 +7,9 @@ beamtemp.K = x(2);
 %[t, epsilon]=ode45(@forward_sigma, tn, 0,[], beamtemp, dsigma);
 t = tn;
 epsilon = forana(beamtemp, t, dsigma);
-misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);
 
-% Calculate RMSE
-theta = epsilon(:,1); % model prediction
-thetaexp = eps_exp(:,1); % observation
-RMSE = mean((theta - thetaexp).^2);
+% squared error integrated over time
+%misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);
 
-misfit_sig = RMSE;
+% Calculate RMSE/MSE
+misfit_sig = sqrt(mean((epsilon - eps_exp).^2));

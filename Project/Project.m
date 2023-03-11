@@ -26,21 +26,27 @@ figure
 plot(epsilon_exp, sigma_exp);
 xlabel('Strain');
 ylabel('Stress');
-title('Stress-Strain Curve: Forward Problem');
+title('Stress-Strain Curve: Forward Problem with Guessed Parameters');
 
+% Set range of parameters
 n_range = 4:0.1:30;
 e_range = 250:10:400;
 e_range = e_range .* 1e9;
 k_range = 70:1:120;
 k_range = k_range .* 1e6;
+
+% Plot misfit values for different values of n
 for i=1:length(n_range)   
     x = [beam.E; beam.K; n_range(i)]; 
     value(i)=misfit_sig(x, epsilon_exp, t, beam, dsigma);
 end
 figure
 plot(n_range, value);
+xlabel('n');
+ylabel('Misfit');
 title('Misfit Values for Different Values of n');
 
+% Plot misfit values for different values of E
 value = zeros(size(e_range));
 for i=1:length(e_range)   
     x = [e_range(i); beam.K; beam.n]; 
@@ -48,8 +54,11 @@ for i=1:length(e_range)
 end
 figure
 plot(e_range, value);
+xlabel('E');
+ylabel('Misfit');
 title('Misfit Values for Different Values of E');
 
+% Plot misfit values for different values of K
 value = zeros(size(k_range));
 for i=1:length(k_range)   
     x = [beam.E; k_range(i); beam.n]; 
@@ -57,18 +66,16 @@ for i=1:length(k_range)
 end
 figure
 plot(k_range, value);
+xlabel('K');
+ylabel('Misfit');
 title('Misfit Values for Different Values of K');
 
 
-
-
-
+% Global optimization using manually iterating over the range of parameters
 [misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
 
 % Generate mesh of E and n ranges
 [E_mesh, n_mesh] = meshgrid(e_range, n_range);
-
-% Create 3D mesh plot of misfit values
 figure
 mesh(E_mesh, n_mesh, squeeze(misfit_values(:,end,:))'); % plot for n = n_range(1)
 xlabel('E');
@@ -78,8 +85,6 @@ title('Misfit Values for Different Values of E and n');
 
 % Generate mesh of K and n ranges
 [K_mesh, n_mesh] = meshgrid(k_range, n_range);
-
-% Create 3D mesh plot of misfit values
 figure
 mesh(K_mesh, n_mesh, squeeze(misfit_values(1,:,:))'); % plot for n = n_range(1)
 xlabel('K');
@@ -87,10 +92,8 @@ ylabel('n');
 zlabel('Misfit');
 title('Misfit Values for Different Values of K and n');
 
-
 % Generate mesh of K and E ranges
 [K_mesh, E_mesh] = meshgrid(k_range, e_range);
-% Create 3D mesh plot of misfit values
 figure
 mesh(K_mesh, E_mesh, squeeze(misfit_values(:,:,5))); % plot for n = n_range(1)
 xlabel('K');
@@ -98,19 +101,27 @@ ylabel('E');
 zlabel('Misfit');
 title('Misfit Values for Different Values of K and E');
 
+
+%% Inverse Problem (Identification usign fminsearch)
+
+% fminsearch used since from the shape of misfit suggests that a global
+% gradient based optimization is not suitable since the optimizer can get
+% stuck in a local minima
+
+% Load id1.mat (two variables: epsiexp and sigexp)
 load('id1.mat');
-t = [0:0.1:80]';
+
 % Define objective function
 fun = @(x) misfit_sig(x, epsiexp, t, beam, dsigma);
 
 % Define initial guess and search bounds
-x0 = [beam.E; beam.K; beam.n];
-lb = [1e4; 1e3; 0.2];
-ub = [1e16; 85e9; 30];
+x0 = [beam.E; beam.K; beam.n]; % initial guess
+lb = [1e4; 1e3; 0.2]; % lower bound
+ub = [1e16; 85e9; 30]; % upper bound
 
-% Run optimization
-options = optimset('Display','iter');
-[x_opt, fval] = fminsearch(fun, x0, options);
+% Optimization
+options = optimset('Display','iter'); % display iterations
+[x_opt, fval] = fminsearch(fun, x0, options);   % local optimization
 
 % Display results
 fprintf('Optimal parameter values:\n');
@@ -123,9 +134,9 @@ fprintf('Misfit function value = %g\n', fval);
 idbeam.E = x_opt(1);
 idbeam.K = x_opt(2);
 idbeam.n = x_opt(3);
-
 epsilon_id = forana(idbeam, t, dsigma); % creation of synthetic data using the identified model
 sigma_id = dsigma * t; % creation of synthetic data using the identified model
+
 
 figure
 plot(epsiexp, sigexp, 'b', epsilon_id, sigma_id, 'r');
@@ -134,6 +145,11 @@ ylabel('Stress');
 title('Stress-Strain Curve: Data vs Identified Model');
 legend('Data', 'Identified Model');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Other tests that didnt work
+
+% It is found that the misfit function is not convex. Hence, the global optimization is not possible.
+% The purpose of using fminsearch instead of the fminunc is to find a solution without checking for gradients
 
 % %[misfit, E_opt, K_opt, n_opt] = misfit_minunc(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
 % % e_range = 180:10:300;

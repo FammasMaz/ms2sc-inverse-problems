@@ -5,19 +5,19 @@ misfit_values = zeros(length(E_range),length(K_range),length(n_range));
 for i = 1:length(E_range)
     for j = 1:length(K_range)
         for k = 1:length(n_range)
+            
             beamtemp = beam;
             beamtemp.E = E_range(i);
             beamtemp.K = K_range(j);
             beamtemp.n = n_range(k);
+
             %[t, epsilon] = ode45(@forward_sigma, tn, 0, [], beamtemp, dsigma);
-            epsilon = forana(beamtemp, tn, dsigma);
+            epsilon = forana(beamtemp, tn, dsigma); % forward analysis
+
+            %%%%% Change misfit function here %%%%%%
             %misfit_temp = quad(@discrepancy, tn(1), tn(end), [], 0, eps_exp, epsilon, n_range(k), tn);
-
-            theta = epsilon(:,1); % model prediction
-            thetaexp = eps_exp(:,1); % observation
-            RMSE = mean((theta - thetaexp).^2);
-
-            misfit_temp = RMSE;
+            misfit_temp = sqrt(mean((epsilon - eps_exp).^2));
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             misfit_values(i,j,k) = misfit_temp; % store misfit value
             if misfit_temp < misfit_min
