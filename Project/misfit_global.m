@@ -9,15 +9,15 @@ for i = 1:length(E_range)
             beamtemp.E = E_range(i);
             beamtemp.K = K_range(j);
             beamtemp.n = n_range(k);
-            [t, epsilon] = ode45(@forward_sigma, tn, 0, [], beamtemp, dsigma);
-            %epsilon = forana(beamtemp, tn, dsigma);
-            misfit_temp = quad(@discrepancy, tn(1), tn(end), [], 0, eps_exp, epsilon, n_range(k), tn);
+            %[t, epsilon] = ode45(@forward_sigma, tn, 0, [], beamtemp, dsigma);
+            epsilon = forana(beamtemp, tn, dsigma);
+            %misfit_temp = quad(@discrepancy, tn(1), tn(end), [], 0, eps_exp, epsilon, n_range(k), tn);
 
-            % theta = epsilon(:,1); % model prediction
-            % thetaexp = eps_exp(:,1); % observation
-            % RMSE = sqrt(mean((theta - thetaexp).^2));
+            theta = epsilon(:,1); % model prediction
+            thetaexp = eps_exp(:,1); % observation
+            RMSE = mean((theta - thetaexp).^2);
 
-            % misfit_temp = RMSE;
+            misfit_temp = RMSE;
 
             misfit_values(i,j,k) = misfit_temp; % store misfit value
             if misfit_temp < misfit_min

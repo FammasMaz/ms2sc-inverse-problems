@@ -10,8 +10,8 @@ epsilon = forana(beamtemp, t, dsigma);
 misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);
 
 % Calculate RMSE
-% theta = epsilon(:,1); % model prediction
-% thetaexp = eps_exp(:,1); % observation
-% RMSE = sqrt(mean((theta - thetaexp).^2));
+theta = epsilon(:,1); % model prediction
+thetaexp = eps_exp(:,1); % observation
+RMSE = mean((theta - thetaexp).^2);
 
-% misfit_sig = RMSE;
+misfit_sig = RMSE;
