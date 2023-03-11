@@ -27,6 +27,7 @@ plot(epsilon_exp, sigma_exp);
 xlabel('Strain');
 ylabel('Stress');
 title('Stress-Strain Curve: Forward Problem with Guessed Parameters');
+saveas(gcf, 'assets/forward_problem.png');
 
 % Set range of parameters
 n_range = 4:0.1:30;
@@ -45,6 +46,7 @@ plot(n_range, value);
 xlabel('n');
 ylabel('Misfit');
 title('Misfit Values for Different Values of n');
+saveas(gcf, 'assets/misfit_n.png');
 
 % Plot misfit values for different values of E
 value = zeros(size(e_range));
@@ -57,6 +59,7 @@ plot(e_range, value);
 xlabel('E');
 ylabel('Misfit');
 title('Misfit Values for Different Values of E');
+saveas(gcf, 'assets/misfit_e.png');
 
 % Plot misfit values for different values of K
 value = zeros(size(k_range));
@@ -69,6 +72,7 @@ plot(k_range, value);
 xlabel('K');
 ylabel('Misfit');
 title('Misfit Values for Different Values of K');
+saveas(gcf, 'assets/misfit_k.png');
 
 
 % Global optimization using manually iterating over the range of parameters
@@ -82,6 +86,7 @@ xlabel('E');
 ylabel('n');
 zlabel('Misfit');
 title('Misfit Values for Different Values of E and n');
+saveas(gcf, 'assets/misfit_e_n.png');
 
 % Generate mesh of K and n ranges
 [K_mesh, n_mesh] = meshgrid(k_range, n_range);
@@ -91,6 +96,7 @@ xlabel('K');
 ylabel('n');
 zlabel('Misfit');
 title('Misfit Values for Different Values of K and n');
+saveas(gcf, 'assets/misfit_k_n.png');
 
 % Generate mesh of K and E ranges
 [K_mesh, E_mesh] = meshgrid(k_range, e_range);
@@ -100,13 +106,15 @@ xlabel('K');
 ylabel('E');
 zlabel('Misfit');
 title('Misfit Values for Different Values of K and E');
+saveas(gcf, 'assets/misfit_k_e.png');
 
 
 %% Inverse Problem (Identification usign fminsearch)
 
 % fminsearch used since from the shape of misfit suggests that a global
 % gradient based optimization is not suitable since the optimizer can get
-% stuck in a local minima
+% stuck in a local minima. `fminsearch` follows a downhill simplex method 
+% introduced by Nelder and Mead in 1965 (IP-Session3, slide 26 on Course notes)
 
 % Load id1.mat (two variables: epsiexp and sigexp)
 load('id1.mat');
@@ -144,6 +152,7 @@ xlabel('Strain');
 ylabel('Stress');
 title('Stress-Strain Curve: Data vs Identified Model');
 legend('Data', 'Identified Model');
+saveas(gcf, 'assets/identified_model.png');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Other tests that didnt work
