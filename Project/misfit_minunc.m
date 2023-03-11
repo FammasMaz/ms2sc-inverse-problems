@@ -2,7 +2,7 @@ function [misfit_min, E_opt, K_opt, n_opt] = misfit_minunc(eps_exp, tn, beam, ds
     % Define anonymous function to pass additional arguments to objective function
     obj_func = @(x) misfit_sig(x, eps_exp, tn, beam, dsigma);
     % Define initial guess for optimization variables
-    x0 = [E_range(1); K_range(1); n_range(1)];
+    x0 = [E_range(1)/(1e9); K_range(1)/(1e6); n_range(1)];
     % Define optimization options
     options = optimoptions('fminunc', 'Display', 'off');
     % Perform optimization
