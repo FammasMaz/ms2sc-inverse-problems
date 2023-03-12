@@ -20,7 +20,7 @@ k_range = k_range .* 1e6;
 tspan = [0:0.1:80]'; % s
 
 % Noise level in percentage
-noise_level = 1;
+noise_level = 0;
 
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
@@ -33,7 +33,7 @@ N = length(epsilon_exp);
 % Plot the forward problem
 figure
 plot(epsilon_exp, sigma_exp);
-if noise ~= 0
+if noise_level ~= 0
     hold on;
     epsilon_exp = epsilon_exp + noise_level/100 * randn(N,1);
     plot(epsilon_exp, sigma_exp);
