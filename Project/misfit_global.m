@@ -1,5 +1,4 @@
 function [misfit_values, E_opt, K_opt, n_opt] = misfit_global(eps_exp, tn, beam, dsigma, E_range, K_range, n_range)
-options = optimset('Display','off');
 misfit_min = Inf;
 misfit_values = zeros(length(E_range),length(K_range),length(n_range));
 for i = 1:length(E_range)
@@ -11,9 +10,7 @@ for i = 1:length(E_range)
             beamtemp.K = K_range(j);
             beamtemp.n = n_range(k);
 
-            %[t, epsilon] = ode45(@forward_sigma, tn, 0, [], beamtemp, dsigma);
             epsilon = forana(beamtemp, tn, dsigma); % forward analysis
-
             %%%%% Change misfit function here %%%%%%
             %misfit_temp = quad(@discrepancy, tn(1), tn(end), [], 0, eps_exp, epsilon, n_range(k), tn);
             misfit_temp = sqrt(mean((epsilon - eps_exp).^2));

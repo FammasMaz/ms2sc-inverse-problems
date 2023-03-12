@@ -1,7 +1,7 @@
-clear all; close all; clc;
+clear; close all; clc;
 
 % Dataset
-% Define parameters
+% Define parameters (by default, these are the initial guesses for optimizations)
 beam.E = 300e+09; % Pa
 beam.K = 90e+06; % Pa
 beam.n = 12;
@@ -10,17 +10,15 @@ r = 0.0254; % m
 s = pi * r^2; % m^2
 
 % Set range of parameters
-n_range = 4:0.1:30;
-e_range = 250:10:400;
-e_range = e_range .* 1e9;
-k_range = 70:1:120;
-k_range = k_range .* 1e6;
+n_range = [4:0.1:30];
+e_range = [250:10:400].*1e+09;
+k_range = [70:1:120].*1e+06;
 
 % Define time span
 tspan = [0:0.1:80]'; % s
 
 % Noise level in percentage
-noise_level = 0;
+noise_level = 1;
 
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
