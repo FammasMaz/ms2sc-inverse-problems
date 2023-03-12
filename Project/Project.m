@@ -1,33 +1,13 @@
 clear all; close all; clc;
 
-%% Forward Problem
+% Dataset
 % Define parameters
-beam.E = 300e9; % Pa
+beam.E = 300e+09; % Pa
 beam.K = 90e+06; % Pa
 beam.n = 12;
 dsigma = 0.8e6; % Pa*s^-1
 r = 0.0254; % m
 s = pi * r^2; % m^2
-
-% Define time span
-tspan = [0:0.1:80]'; % s
-
-% Define ODE function
-%[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
-epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
-t = tspan;
-sigma_exp = dsigma * t; % creation of synthetic data
-N = length(epsilon_exp);
-%epsilon_exp = epsilon_exp + 0.01 * randn(N,1);
-
-
-% Plot the forward problem
-figure
-plot(epsilon_exp, sigma_exp);
-xlabel('Strain');
-ylabel('Stress');
-title('Stress-Strain Curve: Forward Problem with Guessed Parameters');
-saveas(gcf, 'assets/forward_problem.png');
 
 % Set range of parameters
 n_range = 4:0.1:30;
@@ -36,77 +16,57 @@ e_range = e_range .* 1e9;
 k_range = 70:1:120;
 k_range = k_range .* 1e6;
 
-% Plot misfit values for different values of n
-for i=1:length(n_range)   
-    x = [beam.E; beam.K; n_range(i)]; 
-    value(i)=misfit_sig(x, epsilon_exp, t, beam, dsigma);
-end
+% Define time span
+tspan = [0:0.1:80]'; % s
+
+% Noise level in percentage
+noise_level = 1;
+
+% Define ODE function
+%[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
+epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
+t = tspan;
+sigma_exp = dsigma * t; % creation of synthetic data
+N = length(epsilon_exp);
+
+
+% Plot the forward problem
 figure
-plot(n_range, value);
-xlabel('n');
-ylabel('Misfit');
-title('Misfit Values for Different Values of n');
-saveas(gcf, 'assets/misfit_n.png');
+plot(epsilon_exp, sigma_exp);
+if noise ~= 0
+    hold on;
+    epsilon_exp = epsilon_exp + noise_level/100 * randn(N,1);
+    plot(epsilon_exp, sigma_exp);
+    hold off;
+    legend('Original', 'Noisy');
+end
+xlabel('Strain');
+ylabel('Stress');
+title('Stress-Strain Curve: Forward Problem with Guessed Parameters');
+saveas(gcf, 'assets/forward_problem.png');
+
+
+% Plot misfit values for different values of n
+misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'n');
 
 % Plot misfit values for different values of E
-value = zeros(size(e_range));
-for i=1:length(e_range)   
-    x = [e_range(i); beam.K; beam.n]; 
-    value(i)=misfit_sig(x, epsilon_exp, t, beam, dsigma);
-end
-figure
-plot(e_range, value);
-xlabel('E');
-ylabel('Misfit');
-title('Misfit Values for Different Values of E');
-saveas(gcf, 'assets/misfit_e.png');
+misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'E');
 
 % Plot misfit values for different values of K
-value = zeros(size(k_range));
-for i=1:length(k_range)   
-    x = [beam.E; k_range(i); beam.n]; 
-    value(i)=misfit_sig(x, epsilon_exp, t, beam, dsigma);
-end
-figure
-plot(k_range, value);
-xlabel('K');
-ylabel('Misfit');
-title('Misfit Values for Different Values of K');
-saveas(gcf, 'assets/misfit_k.png');
+misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K');
 
 
 % Global optimization using manually iterating over the range of parameters
 [misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
 
 % Generate mesh of E and n ranges
-[E_mesh, n_mesh] = meshgrid(e_range, n_range);
-figure
-mesh(E_mesh, n_mesh, squeeze(misfit_values(:,end,:))'); % plot for n = n_range(1)
-xlabel('E');
-ylabel('n');
-zlabel('Misfit');
-title('Misfit Values for Different Values of E and n');
-saveas(gcf, 'assets/misfit_e_n.png');
+mesh_plotter(misfit_values, e_range, k_range, n_range, 'K', beam);
 
 % Generate mesh of K and n ranges
-[K_mesh, n_mesh] = meshgrid(k_range, n_range);
-figure
-mesh(K_mesh, n_mesh, squeeze(misfit_values(1,:,:))'); % plot for n = n_range(1)
-xlabel('K');
-ylabel('n');
-zlabel('Misfit');
-title('Misfit Values for Different Values of K and n');
-saveas(gcf, 'assets/misfit_k_n.png');
+mesh_plotter(misfit_values, e_range, k_range, n_range, 'E', beam);
 
 % Generate mesh of K and E ranges
-[K_mesh, E_mesh] = meshgrid(k_range, e_range);
-figure
-mesh(K_mesh, E_mesh, squeeze(misfit_values(:,:,5))); % plot for n = n_range(1)
-xlabel('K');
-ylabel('E');
-zlabel('Misfit');
-title('Misfit Values for Different Values of K and E');
-saveas(gcf, 'assets/misfit_k_e.png');
+mesh_plotter(misfit_values, e_range, k_range, n_range, 'n', beam);
 
 
 %% Inverse Problem (Identification usign fminsearch)
@@ -124,8 +84,6 @@ fun = @(x) misfit_sig(x, epsiexp, t, beam, dsigma);
 
 % Define initial guess and search bounds
 x0 = [beam.E; beam.K; beam.n]; % initial guess
-lb = [1e4; 1e3; 0.2]; % lower bound
-ub = [1e16; 85e9; 30]; % upper bound
 
 % Optimization
 options = optimset('Display','iter'); % display iterations
@@ -145,7 +103,6 @@ idbeam.n = x_opt(3);
 epsilon_id = forana(idbeam, t, dsigma); % creation of synthetic data using the identified model
 sigma_id = dsigma * t; % creation of synthetic data using the identified model
 
-
 figure
 plot(epsiexp, sigexp, 'b', epsilon_id, sigma_id, 'r');
 xlabel('Strain');
@@ -155,6 +112,11 @@ legend('Data', 'Identified Model');
 saveas(gcf, 'assets/identified_model.png');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define objective function
+%%
+% Run optimization
+
+
 %% Other tests that didnt work
 
 % It is found that the misfit function is not convex. Hence, the global optimization is not possible.
