@@ -1,4 +1,4 @@
-function mesh_plotter(misfit_values, a_range, b_range, c_range, z_axis, beam)
+function mesh_plotter(misfit_values, a_range, b_range, c_range, z_axis, beam, arg)
 
     if z_axis == 'K'
         idx = find(b_range == beam.K);
@@ -30,7 +30,6 @@ function mesh_plotter(misfit_values, a_range, b_range, c_range, z_axis, beam)
     xlabel(xlab);
     ylabel(ylab);
     zlabel('Misfit');
-    title([ 'Misfit for ', xlab, ' and ', ylab ]);
-    saveas(gcf, strcat('assets/misfit_', xlab, '_', ylab, '.png'));
-
+    title([ 'Misfit for ', xlab, ' and ', ylab]);
+    saveas(gcf, strcat('assets/misfit_', xlab, '_', ylab, arg, '.png'));
 end

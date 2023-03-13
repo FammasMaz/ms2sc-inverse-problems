@@ -1,4 +1,4 @@
-function [misfit_values, E_opt, K_opt, n_opt] = misfit_global(eps_exp, tn, beam, dsigma, E_range, K_range, n_range, lambda)
+function [misfit_values, E_opt, K_opt, n_opt] = misfit_global(eps_exp, tn, beam, dsigma, E_range, K_range, n_range, lambda, arg)
 misfit_min = Inf;
 misfit_values = zeros(length(E_range),length(K_range),length(n_range));
 for i = 1:length(E_range)
@@ -11,7 +11,7 @@ for i = 1:length(E_range)
             %misfit_temp = quad(@discrepancy, tn(1), tn(end), [], 0, eps_exp, epsilon, n_range(k), tn);
             %misfit_temp = sqrt(mean((epsilon - eps_exp).^2));
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            misfit_temp = misfit_sig([E_range(i), K_range(j), n_range(k)], eps_exp, tn, beam, dsigma, lambda);
+            misfit_temp = misfit_sig([E_range(i), K_range(j), n_range(k)], eps_exp, tn, beam, dsigma, lambda, arg);
             misfit_values(i,j,k) = misfit_temp; % store misfit value
             if misfit_temp < misfit_min
                 misfit_min = misfit_temp;
