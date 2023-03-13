@@ -17,9 +17,9 @@ k_range = [70:1:120].*1e+06;
 % Define time span
 tspan = [0:0.1:80]'; % s
 
-% Noise level in percentage
-noise_level = 0;
-
+% Noise level in percentage and regularization
+noise_level = 0.0;
+lambda = 0.0001;
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
 epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
@@ -55,7 +55,7 @@ misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K');
 
 
 % Global optimization using manually iterating over the range of parameters
-[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
+[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range, lambda);
 % Define objective function
 fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma);
 
