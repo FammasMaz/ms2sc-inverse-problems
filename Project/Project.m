@@ -18,8 +18,8 @@ k_range = [70:1:120].*1e+06;
 tspan = [0:0.1:80]'; % s
 
 % Noise level in percentage and regularization
-noise_level = 0.0;
-lambda = 0.0001;
+noise_level = 0;
+lambda = 0.00;
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
 epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
@@ -55,17 +55,18 @@ misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K');
 
 
 % Global optimization using manually iterating over the range of parameters
-[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range, lambda);
+%[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range, lambda);
 % Define objective function
-fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma);
+fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma, lambda);
 
 % Define initial guess and search bounds
-x0 = [100e9; 60e7; 1]; % initial guess
+x0 = [100e9; 60e6; 11]; % initial guess
 
 % Optimization
 options = optimset('Display','iter'); % display iterations
 [x_opt, fval] = fminsearch(fun, x0, options); 
-[xsol,fval]=fminunc(fun, x0, optimset('Display','iter','TolFun',1e-6,'GradObj','off')) 
+[xsol,fval]=fminunc(fun, x0, optimset('Display','iter','TolFun',1e-6,'GradObj','off'));
+
 % Display results
 fprintf('Optimal parameter values using fminsearch:\n');
 fprintf('E = %g Pa\n', x_opt(1));
@@ -98,6 +99,7 @@ fun = @(x) misfit_sig(x, epsiexp, t, beam, dsigma);
 
 % Define initial guess and search bounds
 x0 = [beam.E; beam.K; beam.n]; % initial guess
+x0 = [300e9; 80e7; 12];
 
 % Optimization
 options = optimset('Display','iter'); % display iterations
