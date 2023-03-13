@@ -21,8 +21,8 @@ x0 = [100e9; 60e6; 11]; % initial guess
 tspan = [0:0.1:80]'; % s
 t = tspan;
 % Noise level in percentage and regularization
-noise_level = 0.5;
-lambda = 10;
+noise_level = 0;
+lambda = 0;
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
 epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
