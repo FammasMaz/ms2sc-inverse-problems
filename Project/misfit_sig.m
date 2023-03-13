@@ -16,6 +16,9 @@ function misfit_sig=misfit_sig(x, eps_exp, tn, beam, dsigma, lambda, arg)
     beamtemp.K = x(2);
     %[t, epsilon]=ode45(@forward_sigma, tn, 0,[], beamtemp, dsigma);
     epsilon = forana(beamtemp, tn, dsigma);
+    if lambda~=0
+        low_pass_filter(tn, eps_exp, lambda);
+    end
     if isequal(arg, 'squared')
         misfit_sig = quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);
     elseif isequal(arg, 'absolute')
@@ -26,10 +29,4 @@ function misfit_sig=misfit_sig(x, eps_exp, tn, beam, dsigma, lambda, arg)
         misfit_sig = mean((epsilon - eps_exp).^2);
     end
 
-
-% Calculate RMSE/MSE
-
-% Calculate regularization term
-
-% Total objective function
 

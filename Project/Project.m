@@ -8,7 +8,7 @@ beam.n = 12;
 dsigma = 0.8e6; % Pa*s^-1
 r = 0.0254; % m
 s = pi * r^2; % m^2
-arg = 'squared'
+arg = 'RMSE'
 
 % Set range of parameters
 n_range = [4:0.5:30];
@@ -19,10 +19,10 @@ x0 = [100e9; 60e6; 11]; % initial guess
 
 % Define time span
 tspan = [0:0.1:80]'; % s
-
+t = tspan;
 % Noise level in percentage and regularization
-noise_level = 0.0;
-lambda = 0.00;
+noise_level = 0.5;
+lambda = 10;
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
 epsilon_exp = forana(beam, tspan, dsigma); % creation of synthetic data
@@ -40,8 +40,14 @@ if noise_level ~= 0
     hold on;
     epsilon_exp = epsilon_exp + noise_level/100 * randn(N,1);
     plot(epsilon_exp, sigma_exp);
+    if lambda~=0
+        eps_fil = low_pass_filter(tspan, epsilon_exp, lambda);
+        plot(eps_fil, sigma_exp, 'g');
+        legend('Original', 'Noisy', 'Filtered');
+    else
+        legend('Original', 'Noisy');
+    end
     hold off;
-    legend('Original', 'Noisy');
     tit = 'assets/forward_problem_noisy.png';
 end
 xlabel('Strain');
@@ -55,7 +61,7 @@ time_effect(x0, beam, dsigma, lambda, arg)
 
 %% Sensitivity Analysis against noise
 noise_range = [0.0:0.05:2];
-[sens, param] = sensitivity(xtest, noise_range, epsilon_exp, t, beam, dsigma, lambda, arg);
+%[sens, param] = sensitivity(xtest, noise_range, epsilon_exp, t, beam, dsigma, lambda, arg);
 
 
 %% Misfit Plotter
@@ -68,7 +74,7 @@ misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K',lamb
 
 %% Global optimization using misfit_global
 % Global optimization using manually iterating over the range of parameters
-[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range, lambda, arg);
+%[misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range, lambda, arg);
 
 %% Sensitivity Analysis to initial guess
 % Define initial guess and search bounds
@@ -79,7 +85,7 @@ fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma, lambda, arg);
 e_init = [200e9:10e9:230e9];
 k_init = [60e6:10e6:80e6];
 n_init = [10:1:15];
-[iter, wrong] = init_sensitivity(e_init, k_init, n_init, fun, 'fminsearch', beam, arg);
+%[iter, wrong] = init_sensitivity(e_init, k_init, n_init, fun, 'fminsearch', beam, arg);
 
 % Optimization
 fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma, lambda, arg);
