@@ -18,7 +18,7 @@ k_range = [70:1:120].*1e+06;
 tspan = [0:0.1:80]'; % s
 
 % Noise level in percentage
-noise_level = 1;
+noise_level = 0;
 
 % Define ODE function
 %[t, epsilon_exp]=ode45(@forward_sigma, tspan, 0, [], beam, dsigma);
@@ -56,6 +56,22 @@ misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K');
 
 % Global optimization using manually iterating over the range of parameters
 [misfit_values, E_opt, K_opt, n_opt] = misfit_global(epsilon_exp, t, beam, dsigma, e_range, k_range, n_range);
+% Define objective function
+fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma);
+
+% Define initial guess and search bounds
+x0 = [100e9; 60e7; 12]; % initial guess
+
+% Optimization
+options = optimset('Display','iter'); % display iterations
+[x_opt, fval] = fminsearch(fun, x0, options);   % local optimization
+
+% Display results
+fprintf('Optimal parameter values using fminsearch:\n');
+fprintf('E = %g Pa\n', x_opt(1));
+fprintf('K = %g Pa\n', x_opt(2));
+fprintf('n = %g\n', x_opt(3));
+fprintf('Misfit function value = %g\n', fval);
 
 % Generate mesh of E and n ranges
 mesh_plotter(misfit_values, e_range, k_range, n_range, 'K', beam);
