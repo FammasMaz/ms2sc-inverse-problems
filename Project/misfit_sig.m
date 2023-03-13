@@ -10,4 +10,4 @@ epsilon = forana(beamtemp, tn, dsigma);
 %misfit_sig=quad(@discrepancy,tn(1),tn(end),[],0,eps_exp,epsilon,x(3),tn);
 
 % Calculate RMSE/MSE
-misfit_sig = sqrt(mean((epsilon - eps_exp).^2));
+misfit_sig = mean((epsilon - eps_exp).^2);

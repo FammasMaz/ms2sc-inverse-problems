@@ -60,12 +60,12 @@ misfit_plotter(e_range, k_range, n_range, epsilon_exp, t, beam, dsigma, 'K');
 fun = @(x) misfit_sig(x, epsilon_exp, t, beam, dsigma);
 
 % Define initial guess and search bounds
-x0 = [100e9; 60e7; 12]; % initial guess
+x0 = [100e9; 60e7; 1]; % initial guess
 
 % Optimization
 options = optimset('Display','iter'); % display iterations
-[x_opt, fval] = fminsearch(fun, x0, options);   % local optimization
-
+[x_opt, fval] = fminsearch(fun, x0, options); 
+[xsol,fval]=fminunc(fun, x0, optimset('Display','iter','TolFun',1e-6,'GradObj','off')) 
 % Display results
 fprintf('Optimal parameter values using fminsearch:\n');
 fprintf('E = %g Pa\n', x_opt(1));
